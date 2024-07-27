@@ -21,78 +21,108 @@
     </style>
 </head>
 <body onload='init()'>
-    <svg width="600" height="800"></svg>
+    <label for="makeSelect">Select Make:</label>
+    <select id="makeSelect"></select>
+    <button id="submitButton">Submit</button>
+    <svg width="600" height="800"></svg> 
     <script>
-    	async function init() {
-    	  const data = await d3.csv('https://flunky.github.io/cars2017.csv');
-          var height = 400;
-          var width = 400;
-          var x = d3.scaleLog().domain([10,150]).range([0, width]);
-          var y = d3.scaleLog().domain([10,150]).range([height, 0]);
+        async function init() {
+            const data = await d3.csv('https://flunky.github.io/cars2017.csv');
+            var height = 400;
+            var width = 400;
+            var x = d3.scaleLog().domain([10,150]).range([0, width]);
+            var y = d3.scaleLog().domain([10,150]).range([height, 0]);
 
-          var svg = d3.select("svg");
-          var g = svg.append("g")
-            .attr("transform","translate(100,100)");
+            var svg = d3.select("svg");
+            var g = svg.append("g")
+                .attr("transform","translate(100,100)");
 
-          svg.append("g")
+            svg.append("g")
                 .attr("transform", "translate(100," + (height + 100) + ")")
                 .call(d3.axisBottom(x)
-                 .tickValues([10, 20, 50, 100])
-                 .tickFormat(d3.format("~s")))
+                    .tickValues([10, 20, 50, 100])
+                    .tickFormat(d3.format("~s")))
                 .attr("class", "axis");
 
-          svg.append("g")
+            svg.append("g")
                 .attr("transform", "translate(100,100)")
                 .call(d3.axisLeft(y)
-                 .tickValues([10, 20, 50, 100])
-                 .tickFormat(d3.format("~s")))
+                    .tickValues([10, 20, 50, 100])
+                    .tickFormat(d3.format("~s")))
                 .attr("class", "axis");
 
-
+            // X axis title
             svg.append("text")
                 .attr("text-anchor", "middle")
-                .attr("transform", "translate(" + (width/2 + 100) + " ," + (height + 140) + ")")
+                .attr("transform", "translate(" + (width/2 + 100) + " ," + (height + 140) + ")") 
                 .text("Average City MPG");
 
+            // Y axis title
             svg.append("text")
                 .attr("text-anchor", "middle")
                 .attr("transform", "translate(60," + (height/2 + 100) + ")rotate(-90)")
                 .text("Average Highway MPG");
 
+            // tooltip
             var tooltip = d3.select("body").append("div")
                 .attr("class", "tooltip")
                 .style("opacity", 0);
 
-            svg.append('g')
-                .selectAll("dot")
-                .data(data)
-                .enter()
-                .append("circle")
-                .attr("cx", d => x(+d.AverageCityMPG)+100)
-                .attr("cy", d => y(+d.AverageHighwayMPG)+100)
-                .attr("r", d => (+d.EngineCylinders+2))
-                .attr("fill", d => {
-                    if (d.Fuel === "Electricity") return "green";
-                    if (d.Fuel === "Diesel") return "red";
-                    if (d.Fuel === "Gasoline") return "lightblue";
-                    return "lightgray";
-                })
-                .on("mouseover", function(event, d) {
-                    console.log("---event: ", event);
-                    tooltip.transition()
-                        .duration(200)
-                        .style("opacity", 1);
-                    tooltip.html("Make: " + event.Make + "<br/>Fuel: " + event.Fuel + "<br/>Avg. City MPG: " + event.AverageCityMPG + "<br/>Avg. Highway MPG: " + event.AverageHighwayMPG + "<br/>Engine Cylinders: " + event.EngineCylinders)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 28) + "px");
-                })
-                .on("mouseout", function(d) {
-                    tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
-                });
+            // dropdown
+            var makes = ["All"].concat(Array.from(new Set(data.map(d => d.Make))).sort());
+            var select = d3.select("#makeSelect");
 
+            select.selectAll("option")
+                .data(makes)
+                .enter()
+                .append("option")
+                .attr("value", d => d)
+                .text(d => d);
+
+            function update(selectedMake) {
+                var filteredData = selectedMake === "All" ? data : data.filter(d => d.Make === selectedMake);
+
+                var circles = svg.selectAll("circle")
+                    .data(filteredData, d => d.Make);
+
+                circles.enter()
+                    .append("circle")
+                    .merge(circles)
+                    .attr("cx", d => x(+d.AverageCityMPG) + 100)
+                    .attr("cy", d => y(+d.AverageHighwayMPG) + 100)
+                    .attr("r", d => (+d.EngineCylinders + 2))
+                    .attr("fill", d => {
+                        if (d.Fuel === "Electricity") return "green";
+                        if (d.Fuel === "Diesel") return "red";
+                        if (d.Fuel === "Gasoline") return "lightblue";
+                        return "lightgray";
+                    })
+                    .on("mouseover", function(event, d) {
+                        tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        tooltip.html("Make: " + event.Make + "<br/>City MPG: " + event.AverageCityMPG + "<br/>Highway MPG: " + event.AverageHighwayMPG + "<br/>Engine Cylinders: " + event.EngineCylinders + "<br/>Fuel: " + event.Fuel)
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function(d) {
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+
+                circles.exit().remove();
+            }
+
+            d3.select("#submitButton").on("click", function() {
+                var selectedMake = d3.select("#makeSelect").property("value");
+                update(selectedMake);
+            });
+
+            update("All");
         }
     </script>
 </body>
 </html>
+
+
