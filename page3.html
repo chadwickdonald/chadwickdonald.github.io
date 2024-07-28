@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Narrative Visualization Project</title>
+    <title>Narrative Visualization Project - Page 2</title>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://unpkg.com/d3-svg-annotation@2.5.1"></script>
     <style>
@@ -17,16 +17,22 @@
             display: inline-block;
         }
         circle {stroke: black;}
-        #nextButton {
+        #backButton, #nextButton {
             position: absolute;
             top: 10px;
-            left: 10px;
             padding: 10px 20px;
             font-size: 16px;
+        }
+        #backButton {
+            left: 10px;
+        }
+        #nextButton {
+            left: 120px; /* Adjust as needed for spacing */
         }
     </style>
 </head>
 <body onload='init()'>
+    <button id="backButton">Back</button>
     <button id="nextButton">Next</button>
     <svg width="600" height="800"></svg> 
     <script>
@@ -99,7 +105,7 @@
             const annotations = [{
                 note: {
                     label: "This graph shows the relationship between fuel, cylinders and mpg.",
-                    title: "Cars and MPG"
+                    title: "Cars and MPG, page 3"
                 },
                 x: 0,
                 y: 0,
@@ -114,9 +120,14 @@
                 .attr("class", "annotation-group")
                 .call(makeAnnotations);
 
-            // Add click event for next button to navigate to page2.html
-            d3.select("#nextButton").on("click", function() {
+            // Add click event for back button to navigate to index1.html
+            d3.select("#backButton").on("click", function() {
                 window.location.href = "page2.html";
+            });
+
+            // Add click event for next button to navigate to page3.html
+            d3.select("#nextButton").on("click", function() {
+                window.location.href = "page_last.html";
             });
         }
     </script>

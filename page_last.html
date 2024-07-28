@@ -10,14 +10,25 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
         }
         #controls {
             margin: 20px auto;
             display: inline-block;
         }
         circle {stroke: black;}
-        #nextButton {
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 8px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        #backButton {
             position: absolute;
             top: 10px;
             left: 10px;
@@ -27,7 +38,10 @@
     </style>
 </head>
 <body onload='init()'>
-    <button id="nextButton">Next</button>
+    <label for="makeSelect">Select Make:</label>
+    <select id="makeSelect"></select>
+    <button id="submitButton">Submit</button>
+    <button id="backButton">Back</button>
     <svg width="600" height="800"></svg> 
     <script>
         async function init() {
@@ -40,6 +54,15 @@
             var svg = d3.select("svg");
             var g = svg.append("g")
                 .attr("transform","translate(100,100)");
+
+            // // Add annotation
+            // svg.append("text")
+            //     .attr("x", 20)
+            //     .attr("y", 100)
+            //     .attr("text-anchor", "start")
+            //     .style("font-size", "14px")
+            //     .style("font-family", "sans-serif")
+            //     .text("This graph shows the relationship between fuel, cylinders and mpgxxx.");
 
             svg.append("g")
                 .attr("transform", "translate(100," + (height + 100) + ")")
@@ -67,8 +90,24 @@
                 .attr("transform", "translate(60," + (height/2 + 100) + ")rotate(-90)")
                 .text("Average Highway MPG");
 
-            function update() {
-                var filteredData = data;
+            // tooltip
+            var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            // dropdown
+            var makes = ["All"].concat(Array.from(new Set(data.map(d => d.Make))).sort());
+            var select = d3.select("#makeSelect");
+
+            select.selectAll("option")
+                .data(makes)
+                .enter()
+                .append("option")
+                .attr("value", d => d)
+                .text(d => d);
+
+            function update(selectedMake) {
+                var filteredData = selectedMake === "All" ? data : data.filter(d => d.Make === selectedMake);
 
                 var circles = svg.selectAll("circle")
                     .data(filteredData, d => d.Make);
@@ -84,16 +123,31 @@
                         if (d.Fuel === "Diesel") return "red";
                         if (d.Fuel === "Gasoline") return "lightblue";
                         return "lightgray";
+                    })
+                    .on("mouseover", function(event, d) {
+                        var d3_event = d3.event;
+                        tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        tooltip.html("Make: " + event.Make + "<br/>City MPG: " + event.AverageCityMPG + "<br/>Highway MPG: " + event.AverageHighwayMPG + "<br/>Engine Cylinders: " + event.EngineCylinders + "<br/>Fuel: " + event.Fuel)
+                            .style("left", (d3_event.pageX + 20) + "px")
+                            .style("top", (d3_event.pageY - 20) + "px");
+                    })
+                    .on("mouseout", function(d) {
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
                     });
 
                 circles.exit().remove();
             }
 
             d3.select("#submitButton").on("click", function() {
-                update();
+                var selectedMake = d3.select("#makeSelect").property("value");
+                update(selectedMake);
             });
 
-            update();
+            update("All");
 
             // Add annotation using d3-annotation
             const annotations = [{
@@ -114,11 +168,12 @@
                 .attr("class", "annotation-group")
                 .call(makeAnnotations);
 
-            // Add click event for next button to navigate to page2.html
-            d3.select("#nextButton").on("click", function() {
-                window.location.href = "page2.html";
-            });
+            d3.select("#backButton").on("click", function() {
+                window.location.href = "page3.html";
+            });    
         }
     </script>
 </body>
 </html>
+
+
