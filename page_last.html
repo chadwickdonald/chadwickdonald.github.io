@@ -6,14 +6,16 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://unpkg.com/d3-svg-annotation@2.5.1"></script>
     <style>
-       body {
+        body {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         #controls {
             margin: 20px auto;
-            display: inline-block;
+            display: flex;
+            gap: 10px;
+            margin-top: -200px;
         }
         circle {stroke: black;}
         .tooltip {
@@ -28,10 +30,7 @@
             border-radius: 8px;
             pointer-events: none;
         }
-        #backButton {
-            position: absolute;
-            top: 10px;
-            left: 10px;
+        #controls button {
             padding: 10px 20px;
             font-size: 16px;
         }
@@ -41,8 +40,11 @@
     <label for="makeSelect">Select Make:</label>
     <select id="makeSelect"></select>
     <button id="submitButton">Submit</button>
-    <button id="backButton">Back</button>
-    <svg width="600" height="800"></svg> 
+    <svg width="600" height="800"></svg>
+    <div id="controls">
+        <button id="homeButton">Home</button>
+        <button id="backButton">Back</button>
+    </div>
     <script>
         async function init() {
             const data = await d3.csv('https://flunky.github.io/cars2017.csv');
@@ -54,15 +56,6 @@
             var svg = d3.select("svg");
             var g = svg.append("g")
                 .attr("transform","translate(100,100)");
-
-            // // Add annotation
-            // svg.append("text")
-            //     .attr("x", 20)
-            //     .attr("y", 100)
-            //     .attr("text-anchor", "start")
-            //     .style("font-size", "14px")
-            //     .style("font-family", "sans-serif")
-            //     .text("This graph shows the relationship between fuel, cylinders and mpgxxx.");
 
             svg.append("g")
                 .attr("transform", "translate(100," + (height + 100) + ")")
@@ -78,13 +71,13 @@
                     .tickFormat(d3.format("~s")))
                 .attr("class", "axis");
 
-            // X axis title
+            // X axis
             svg.append("text")
                 .attr("text-anchor", "middle")
                 .attr("transform", "translate(" + (width/2 + 100) + " ," + (height + 140) + ")") 
                 .text("Average City MPG");
 
-            // Y axis title
+            // Y axis
             svg.append("text")
                 .attr("text-anchor", "middle")
                 .attr("transform", "translate(60," + (height/2 + 100) + ")rotate(-90)")
@@ -149,7 +142,6 @@
 
             update("All");
 
-            // Add annotation using d3-annotation
             const annotations = [{
                 note: {
                     label: "On this screen, you may focus on a circle with your mouse for a tooltip to appear presenting more information about the auto type including make, cylinders, fuel type, and mpg. You may also choose from a dropdown the make of the auto.",
@@ -169,12 +161,14 @@
                 .attr("class", "annotation-group")
                 .call(makeAnnotations);
 
+            d3.select("#homeButton").on("click", function() {
+                window.location.href = "index.html";
+            });
+
             d3.select("#backButton").on("click", function() {
-                window.location.href = "page3.html";
+                window.location.href = "page4.html";
             });    
         }
     </script>
 </body>
 </html>
-
-

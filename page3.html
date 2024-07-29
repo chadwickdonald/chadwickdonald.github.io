@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Narrative Visualization Project - Page 2</title>
+    <title>Narrative Visualization Project</title>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://unpkg.com/d3-svg-annotation@2.5.1"></script>
     <style>
@@ -14,27 +14,24 @@
         }
         #controls {
             margin: 20px auto;
-            display: inline-block;
+            display: flex;
+            gap: 10px;
+            margin-top: -200px;
         }
         circle {stroke: black;}
-        #backButton, #nextButton {
-            position: absolute;
-            top: 10px;
+        #controls button {
             padding: 10px 20px;
             font-size: 16px;
-        }
-        #backButton {
-            left: 10px;
-        }
-        #nextButton {
-            left: 120px; /* Adjust as needed for spacing */
         }
     </style>
 </head>
 <body onload='init()'>
-    <button id="backButton">Back</button>
-    <button id="nextButton">Next</button>
     <svg width="600" height="800"></svg> 
+    <div id="controls">
+        <button id="homeButton">Home</button>
+        <button id="backButton">Back</button>
+        <button id="nextButton">Next</button>
+    </div>
     <script>
         async function init() {
             const data = await d3.csv('https://flunky.github.io/cars2017.csv');
@@ -96,11 +93,10 @@
 
             update();
 
-            // Add annotation using d3-annotation
             const annotations = [{
                 note: {
                     label: "This graph shows the relationship between cylinders and mpg where fuel used is gasoline.",
-                    title: "Cars and MPG, page 3",
+                    title: "Cars and MPG",
                     wrap: width
                 },
                 x: 120,
@@ -116,12 +112,14 @@
                 .attr("class", "annotation-group")
                 .call(makeAnnotations);
 
-            // Add click event for back button to navigate to index1.html
+            d3.select("#homeButton").on("click", function() {
+                window.location.href = "index.html";
+            }); 
+
             d3.select("#backButton").on("click", function() {
                 window.location.href = "page2.html";
             });
 
-            // Add click event for next button to navigate to page3.html
             d3.select("#nextButton").on("click", function() {
                 window.location.href = "page4.html";
             });
