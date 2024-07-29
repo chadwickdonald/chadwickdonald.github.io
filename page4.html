@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Narrative Visualization Project</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://unpkg.com/d3-svg-annotation@2.5.1"></script>
+    <style>
+       body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        #controls {
+            margin: 20px auto;
+            display: flex;
+            gap: 10px;
+            margin-top: -200px;
+        }
+        circle {stroke: black;}
+        #controls button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body onload='init()'>
+    <svg width="600" height="800"></svg>
+        <div id="controls">
+        <button id="homeButton">Home</button>
+        <button id="backButton">Back</button>
+        <button id="nextButton">Next</button>
+    </div>
+    <script>
+        async function init() {
+            const data = await d3.csv('https://flunky.github.io/cars2017.csv');
+            var height = 400;
+            var width = 400;
+            var x = d3.scaleLog().domain([10, 150]).range([0, width]);
+            var y = d3.scaleLog().domain([10, 150]).range([height, 0]);
+
+            var svg = d3.select("svg");
+            var g = svg.append("g")
+                .attr("transform", "translate(100,100)");
+
+            svg.append("g")
+                .attr("transform", "translate(100," + (height + 100) + ")")
+                .call(d3.axisBottom(x)
+                    .tickValues([10, 20, 50, 100])
+                    .tickFormat(d3.format("~s")))
+                .attr("class", "axis");
+
+            svg.append("g")
+                .attr("transform", "translate(100,100)")
+                .call(d3.axisLeft(y)
+                    .tickValues([10, 20, 50, 100])
+                    .tickFormat(d3.format("~s")))
+                .attr("class", "axis");
+
+            // X axis title
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate(" + (width / 2 + 100) + " ," + (height + 140) + ")") 
+                .text("Average City MPG");
+
+            // Y axis title
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate(60," + (height / 2 + 100) + ")rotate(-90)")
+                .text("Average Highway MPG");
+
+            function update() {
+                var filteredData = data.filter(d => d.Fuel === "Electricity" || d.Fuel === "Diesel");
+
+                var circles = svg.selectAll("circle")
+                    .data(filteredData, d => d.Make);
+
+                circles.enter()
+                    .append("circle")
+                    .merge(circles)
+                    .attr("cx", d => x(+d.AverageCityMPG) + 100)
+                    .attr("cy", d => y(+d.AverageHighwayMPG) + 100)
+                    .attr("r", d => (+d.EngineCylinders + 2))
+                    .attr("fill", d => {
+                        if (d.Fuel === "Electricity") return "green";
+                        if (d.Fuel === "Diesel") return "red";
+                    });
+
+                circles.exit().remove();
+            }
+
+            d3.select("#submitButton").on("click", function() {
+                update();
+            });
+
+            update();
+
+            const annotations = [{
+                note: {
+                    label: "This graph shows the relationship between fuel (Electricity or Diesel), cylinders, and mpg.",
+                    title: "Cars and MPG",
+                    wrap: width
+                },
+                x: 120,
+                y: 0,
+                dy: 0,
+                dx: 0
+            }];
+
+            const makeAnnotations = d3.annotation()
+                .annotations(annotations);
+
+            svg.append("g")
+                .attr("class", "annotation-group")
+                .call(makeAnnotations);
+
+            d3.select("#homeButton").on("click", function() {
+                window.location.href = "index.html";
+            }); 
+
+            d3.select("#backButton").on("click", function() {
+                window.location.href = "page3.html";
+            });
+
+            d3.select("#nextButton").on("click", function() {
+                window.location.href = "page_last.html";
+            });
+        }
+    </script>
+</body>
+</html>
