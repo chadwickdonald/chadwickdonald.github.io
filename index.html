@@ -28,7 +28,7 @@
 </head>
 <body onload='init()'>
     <button id="nextButton">Next</button>
-    <svg width="600" height="800"></svg> 
+    <svg width="800" height="800"></svg> 
     <script>
         async function init() {
             const data = await d3.csv('https://flunky.github.io/cars2017.csv');
@@ -98,10 +98,11 @@
             // Add annotation using d3-annotation
             const annotations = [{
                 note: {
-                    label: "This graph shows the relationship between fuel, cylinders and mpg.",
-                    title: "Cars and MPG"
+                    label: "This graph shows the relationship between fuel type, number of cylinders and mileage. The car makes are graphed against Average City MPG on the x-axis and Average Highway MPG on the y-axis. The number of cylinders is represented by the size of the car circle, and the type of fuel is represented by the color with gasoline being blue, diesel being red, and electricity being green.",
+                    title: "Cars and MPG",
+                    wrap: width
                 },
-                x: 0,
+                x: 120,
                 y: 0,
                 dy: 0,
                 dx: 0
